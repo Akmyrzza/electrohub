@@ -10,6 +10,9 @@ import (
 	"syscall"
 	"time"
 
+	"github.com/akmyrzza/electrohub/internal/products/delivery"
+	"github.com/akmyrzza/electrohub/internal/products/repository"
+	"github.com/akmyrzza/electrohub/internal/products/usecase"
 	"github.com/go-chi/chi/v5"
 )
 
@@ -18,11 +21,22 @@ var buildVersion = "dev"
 func main() {
 	fmt.Println("Electrohub API starting...")
 
+	productRepository := repository.NewInMemoryProductRepo()
+	productUseCase := usecase.NewProductUseCase(productRepository)
+	productHandler := delivery.NewProductHandler(productUseCase)
+
 	r := chi.NewRouter()
 
 	r.Get("/ping", func(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusOK)
 		w.Write([]byte("pong"))
+	})
+
+	r.Route("/api/v1", func(api chi.Router) {
+		api.Route("/products", func(pr chi.Router) {
+			pr.Get("/", productHandler.GetAll)
+			pr.Post("/", productHandler.Create)
+		})
 	})
 
 	srv := &http.Server{
