@@ -3,22 +3,22 @@ package usecase
 import "github.com/akmyrzza/electrohub/internal/products/entity"
 
 type ProductRepository interface {
-	GetAll() ([]entity.Product, error)
-	Create(p entity.Product) error
+	ListProducts() ([]entity.Product, error)
+	CreateProduct(p entity.Product) error
 }
 
-type ProductUseCase struct {
-	repository ProductRepository
+type ProductService struct {
+	repo ProductRepository
 }
 
-func NewProductUseCase(r ProductRepository) *ProductUseCase {
-	return &ProductUseCase{repository: r}
+func NewProductService(r ProductRepository) *ProductService {
+	return &ProductService{repo: r}
 }
 
-func (uc *ProductUseCase) GetAll() ([]entity.Product, error) {
-	return uc.repository.GetAll()
+func (s *ProductService) ListProducts() ([]entity.Product, error) {
+	return s.repo.ListProducts()
 }
 
-func (uc *ProductUseCase) Create(p entity.Product) error {
-	return uc.repository.Create(p)
+func (s *ProductService) CreateProduct(p entity.Product) error {
+	return s.repo.CreateProduct(p)
 }

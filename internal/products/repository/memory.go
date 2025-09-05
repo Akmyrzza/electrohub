@@ -6,15 +6,15 @@ type InMemoryProductRepository struct {
 	data []entity.Product
 }
 
-func NewInMemoryProductRepo() *InMemoryProductRepository {
-	return &InMemoryProductRepository{data: []entity.Product{}}
+func NewInMemoryProductRepository() *InMemoryProductRepository {
+	return &InMemoryProductRepository{data: make([]entity.Product, 0)}
 }
 
-func (r *InMemoryProductRepository) GetAll() ([]entity.Product, error) {
+func (r *InMemoryProductRepository) ListProducts() ([]entity.Product, error) {
 	return r.data, nil
 }
 
-func (r *InMemoryProductRepository) Create(p entity.Product) error {
+func (r *InMemoryProductRepository) CreateProduct(p entity.Product) error {
 	p.ID = int64(len(r.data) + 1)
 	r.data = append(r.data, p)
 	return nil

@@ -21,8 +21,8 @@ var buildVersion = "dev"
 func main() {
 	fmt.Println("Electrohub API starting...")
 
-	productRepository := repository.NewInMemoryProductRepo()
-	productUseCase := usecase.NewProductUseCase(productRepository)
+	productRepository := repository.NewInMemoryProductRepository()
+	productUseCase := usecase.NewProductService(productRepository)
 	productHandler := delivery.NewProductHandler(productUseCase)
 
 	r := chi.NewRouter()
@@ -34,8 +34,8 @@ func main() {
 
 	r.Route("/api/v1", func(api chi.Router) {
 		api.Route("/products", func(pr chi.Router) {
-			pr.Get("/", productHandler.GetAll)
-			pr.Post("/", productHandler.Create)
+			pr.Get("/", productHandler.ListProducts)
+			pr.Post("/", productHandler.CreateProduct)
 		})
 	})
 

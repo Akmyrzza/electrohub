@@ -9,34 +9,40 @@ import (
 )
 
 type ProductHandler struct {
-	productUseCase *usecase.ProductUseCase
+	service *usecase.ProductService
 }
 
-func NewProductHandler(productUseCase *usecase.ProductUseCase) *ProductHandler {
-	return &ProductHandler{productUseCase: productUseCase}
+func NewProductHandler(service *usecase.ProductService) *ProductHandler {
+	return &ProductHandler{service: service}
 }
 
-func (h *ProductHandler) GetAll(w http.ResponseWriter, _ *http.Request) {
-	products, err := h.productUseCase.GetAll()
+func (h *ProductHandler) ListProducts(w http.ResponseWriter, _ *http.Request) {
+	products, err := h.service.ListProducts()
 	if err != nil {
-		w.WriteHeader(http.StatusInternalServerError)
+		http.Error(w, "failed to list products", http.StatusInternalServerError)
+		return
 	}
 
-	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(products)
+	writeJSON(w, http.StatusOK, products)
 }
 
-func (h *ProductHandler) Create(w http.ResponseWriter, r *http.Request) {
+func (h *ProductHandler) CreateProduct(w http.ResponseWriter, r *http.Request) {
 	var p entity.Product
 	if err := json.NewDecoder(r.Body).Decode(&p); err != nil {
-		http.Error(w, err.Error(), http.StatusBadRequest)
+		http.Error(w, "invalid request body", http.StatusBadRequest)
 		return
 	}
 
-	if err := h.productUseCase.Create(p); err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+	if err := h.service.CreateProduct(p); err != nil {
+		http.Error(w, "failed to create product", http.StatusInternalServerError)
 		return
 	}
 
-	w.WriteHeader(http.StatusCreated)
+	writeJSON(w, http.StatusCreated, p)
+}
+
+func writeJSON(w http.ResponseWriter, status int, data interface{}) {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(status)
+	_ = json.NewEncoder(w).Encode(data)
 }
