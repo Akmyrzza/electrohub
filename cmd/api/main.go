@@ -35,7 +35,10 @@ func main() {
 	r.Route("/api/v1", func(api chi.Router) {
 		api.Route("/products", func(pr chi.Router) {
 			pr.Get("/", productHandler.ListProducts)
+			pr.Get("/{id}", productHandler.GetProductByID)
 			pr.Post("/", productHandler.CreateProduct)
+			pr.Put("/{id}", productHandler.UpdateProduct)
+			pr.Delete("/{id}", productHandler.DeleteProduct)
 		})
 	})
 
