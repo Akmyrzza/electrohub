@@ -1,0 +1,18 @@
+version: "3.9"
+
+services:
+  db:
+    image: postgres:17
+    container_name: electrohub_db
+    restart: always
+    environment:
+      POSTGRES_USER: electrohub
+      POSTGRES_PASSWORD: secret
+      POSTGRES_DB: electrohub
+    ports:
+      - 5432:5432
+    volumes:
+      - db_data:/var/lib/postgresql/data
+
+volumes:
+  db_data:

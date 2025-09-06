@@ -19,8 +19,9 @@ func NewProductHandler(service *usecase.ProductService) *ProductHandler {
 	return &ProductHandler{service: service}
 }
 
-func (h *ProductHandler) ListProducts(w http.ResponseWriter, _ *http.Request) {
-	products, err := h.service.ListProducts()
+func (h *ProductHandler) ListProducts(w http.ResponseWriter, r *http.Request) {
+	ctx := r.Context()
+	products, err := h.service.ListProducts(ctx)
 	if err != nil {
 		writeError(w, http.StatusInternalServerError, "failed to list products")
 		return
@@ -29,6 +30,8 @@ func (h *ProductHandler) ListProducts(w http.ResponseWriter, _ *http.Request) {
 }
 
 func (h *ProductHandler) GetProductByID(w http.ResponseWriter, r *http.Request) {
+	ctx := r.Context()
+
 	idStr := chi.URLParam(r, "id")
 	productID, err := strconv.ParseInt(idStr, 10, 64)
 	if err != nil {
@@ -36,7 +39,7 @@ func (h *ProductHandler) GetProductByID(w http.ResponseWriter, r *http.Request) 
 		return
 	}
 
-	product, err := h.service.GetProductByID(productID)
+	product, err := h.service.GetProductByID(ctx, productID)
 	if err != nil {
 		writeError(w, http.StatusNotFound, "product not found")
 		return
@@ -45,13 +48,14 @@ func (h *ProductHandler) GetProductByID(w http.ResponseWriter, r *http.Request) 
 }
 
 func (h *ProductHandler) CreateProduct(w http.ResponseWriter, r *http.Request) {
+	ctx := r.Context()
 	var p entity.Product
 	if err := json.NewDecoder(r.Body).Decode(&p); err != nil {
 		writeError(w, http.StatusBadRequest, "invalid request body")
 		return
 	}
 
-	product, err := h.service.CreateProduct(p)
+	product, err := h.service.CreateProduct(ctx, p)
 	if err != nil {
 		writeError(w, http.StatusInternalServerError, "failed to create product")
 		return
@@ -60,6 +64,7 @@ func (h *ProductHandler) CreateProduct(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *ProductHandler) UpdateProduct(w http.ResponseWriter, r *http.Request) {
+	ctx := r.Context()
 	idStr := chi.URLParam(r, "id")
 	productID, err := strconv.ParseInt(idStr, 10, 64)
 	if err != nil {
@@ -73,7 +78,7 @@ func (h *ProductHandler) UpdateProduct(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	updated, err := h.service.UpdateProduct(productID, p)
+	updated, err := h.service.UpdateProduct(ctx, productID, p)
 	if err != nil {
 		writeError(w, http.StatusNotFound, "product not found")
 		return
@@ -82,6 +87,8 @@ func (h *ProductHandler) UpdateProduct(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *ProductHandler) DeleteProduct(w http.ResponseWriter, r *http.Request) {
+	ctx := r.Context()
+
 	idStr := chi.URLParam(r, "id")
 	productID, err := strconv.ParseInt(idStr, 10, 64)
 	if err != nil {
@@ -89,7 +96,7 @@ func (h *ProductHandler) DeleteProduct(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if err := h.service.DeleteProduct(productID); err != nil {
+	if err := h.service.DeleteProduct(ctx, productID); err != nil {
 		writeError(w, http.StatusNotFound, "product not found")
 		return
 	}

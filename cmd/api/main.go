@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"database/sql"
 	"fmt"
 	"log"
 	"net/http"
@@ -10,8 +11,10 @@ import (
 	"syscall"
 	"time"
 
+	_ "github.com/lib/pq"
+
 	"github.com/akmyrzza/electrohub/internal/products/delivery"
-	"github.com/akmyrzza/electrohub/internal/products/repository"
+	"github.com/akmyrzza/electrohub/internal/products/repository/postgres"
 	"github.com/akmyrzza/electrohub/internal/products/usecase"
 	"github.com/go-chi/chi/v5"
 )
@@ -21,7 +24,18 @@ var buildVersion = "dev"
 func main() {
 	fmt.Println("Electrohub API starting...")
 
-	productRepository := repository.NewInMemoryProductRepository()
+	dsn := "postgres://electrohub:secret@localhost:5432/electrohub?sslmode=disable"
+	db, err := sql.Open("postgres", dsn)
+	if err != nil {
+		log.Fatalf("failed to connect database: %v", err)
+	}
+	defer db.Close()
+
+	if err := db.Ping(); err != nil {
+		log.Fatalf("failed to ping database: %v", err)
+	}
+
+	productRepository := postgres.NewPostgresProductRepository(db)
 	productUseCase := usecase.NewProductService(productRepository)
 	productHandler := delivery.NewProductHandler(productUseCase)
 
